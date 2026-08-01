@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Otra Carrera — Archivador de guías</title>
+<meta name="description" content="Guías fáciles para usar la IA en el día a día: entender comunicados del colegio, boletas y más. Busca tu tema, sigue los 3 pasos, listo.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="La Otra Carrera — Archivador de guías">
+<meta property="og:description" content="Guías fáciles para usar la IA en el día a día: entender comunicados del colegio, boletas y más. Busca tu tema, sigue los 3 pasos, listo.">
+<meta property="og:image" content="https://laotracarrera.github.io/la-otra-carrera-/images/mascot-badge.png">
+<meta property="og:url" content="https://laotracarrera.github.io/la-otra-carrera-/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="La Otra Carrera — Archivador de guías">
+<meta name="twitter:description" content="Guías fáciles para usar la IA en el día a día: entender comunicados del colegio, boletas y más.">
+<meta name="twitter:image" content="https://laotracarrera.github.io/la-otra-carrera-/images/mascot-badge.png">
+<link rel="icon" href="images/mascot-badge.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Permanent+Marker&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #000;
+    --panel: #0c0c0c;
+    --ink: #fff;
+    --ink-soft: #a8a8a4;
+    --line: rgba(255,255,255,0.85);
+    --line-dim: rgba(255,255,255,0.18);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Work Sans', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:640px;margin:0 auto;padding:22px 16px 70px;}
+
+  /* ---------- header ---------- */ck
+  header{ text-align:center; margin-bottom:26px; position:relative; }
+  .mascot-badge{
+    width:74px;height:74px;
+    border-radius:50%;
+    margin:0 auto 14px;
+    display:block;
+    box-shadow:0 0 0 3px #fff, 0 8px 20px rgba(0,0,0,0.6);
+  }
+  .kicker{
+    font-family:'Permanent Marker', cursive;
+    font-size:19px; font-weight:400;
+    color:#fff;
+    opacity:0.8;
+    margin:0 0 4px;
+  }
+  h1{
+    font-family:'Archivo Black', sans-serif;
+    font-weight:400;
+    font-size:32px;
+    margin:0 0 10px;
+    letter-spacing:0.5px;
+  }
+  .sub{ color:var(--ink-soft); font-size:15px; margin:0; }
+
+  .share-btn{
+    margin-top:16px;
+    background:#000;
+    border:2px solid #fff;
+    color:#fff;
+    font-family:'Work Sans', sans-serif;
+    font-weight:600;
+    font-size:13.5px;
+    padding:8px 18px;
+    border-radius:20px;
+    cursor:pointer;
+  }
+  .share-btn:active{ transform:scale(0.97); }
+
+  /* ---------- folder grid (home view) ---------- */
+  .folder-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    margin-top:26px;
+  }
+  .folder{
+    background:var(--panel);
+    border:2px solid #fff;
+    border-radius:4px;
+    padding:18px 14px;
+    text-align:left;
+    cursor:pointer;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    transition:transform .15s ease;
+    color:#fff;
+  }
+  .folder:active{ transform:scale(0.97); }
+  .folder-emoji{ font-size:26px; filter:grayscale(1) contrast(1.4); }
+  .folder-name{
+    font-family:'Archivo Black', sans-serif;
+    font-weight:400;
+    font-size:15px;
+    line-height:1.25;
+  }
+  .folder-count{ font-size:12.5px; color:var(--ink-soft); }
+  .folder.soon{ border-color:var(--line-dim); opacity:0.5; }
+  .folder.soon .folder-count{ font-family:'Permanent Marker', cursive; font-size:14px; }
+
+  /* ---------- panel content area ---------- */
+  .panel{ display:none; }
+  .panel.active{ display:block; }
+
+  .back-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background:none;
+    border:none;
+    color:#fff;
+    font-weight:600;
+    font-size:14.5px;
+    cursor:pointer;
+    padding:6px 0 16px;
+    opacity:0.85;
+  }
+
+  .guide-list-item{
+    background:var(--panel);
+    border:2px solid #fff;
+    border-radius:4px;
+    padding:14px 16px;
+    margin-bottom:10px;
+    cursor:pointer;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    color:#fff;
+  }
+  .guide-list-item .name{ font-weight:600; font-size:15px; }
+  .guide-list-item .arrow{ color:#fff; font-size:18px; }
+
+  /* ---------- guide detail ---------- */
+  .guide-title{
+    font-family:'Archivo Black', sans-serif;
+    font-weight:400;
+    font-size:22px;
+    margin:0 0 6px;
+    letter-spacing:0.3px;
+  }
+  .guide-sub{ color:var(--ink-soft); font-size:14.5px; margin:0 0 20px; }
+
+  .block{
+    background:var(--panel);
+    border:2px solid #fff;
+    border-radius:4px;
+    padding:18px 16px;
+    margin-bottom:16px;
+    position:relative;
+    overflow:hidden;
+  }
+  .halftone-corner{
+    position:absolute;
+    top:-16px; left:-16px;
+    width:80px;height:80px;
+    background-image: radial-gradient(circle, #fff 2px, transparent 2.5px);
+    background-size:12px 12px;
+    opacity:0.35;
+    clip-path: polygon(0 0, 100% 0, 0 100%);
+  }
+  .block-label{
+    font-family:'Archivo Black', sans-serif;
+    font-weight:400;
+    font-size:13px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:#fff;
+    margin:0 0 14px;
+    display:flex;
+    align-items:center;
+    gap:7px;
+  }
+  .steps{ margin:0; padding:0; list-style:none; counter-reset:step; }
+  .steps li{
+    counter-increment:step;
+    display:flex;
+    gap:12px;
+    padding-bottom:14px;
+    margin-bottom:14px;
+    border-bottom:1px dashed var(--line-dim);
+    font-size:14.5px;
+    line-height:1.5;
+    color:#fff;
+  }
+  .steps li:last-child{ border-bottom:none; margin-bottom:0; padding-bottom:0; }
+  .steps li::before{
+    content:counter(step);
+    flex-shrink:0;
+    width:26px;height:26px;
+    background:#fff;
+    color:#000;
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-weight:700;
+    font-size:13px;
+    font-family:'Archivo Black',sans-serif;
+  }
+  .steps li b{ display:block; margin-bottom:2px; }
+  .steps li .detail{ color:var(--ink-soft); }
+
+  /* speech-bubble style callouts, replacing the old warm callout boxes */
+  .bubble-row{ display:flex; flex-direction:column; gap:10px; }
+  .bubble{
+    background:#fff;
+    color:#000;
+    border-radius:14px;
+    padding:12px 15px;
+    font-size:14px;
+    line-height:1.4;
+    max-width:92%;
+    position:relative;
+  }
+  .bubble.me{ align-self:flex-end; background:#fff; }
+  .bubble.ia{ align-self:flex-start; background:#e6e6e6; }
+  .bubble b{ color:#000; }
+  .bubble-label{
+    font-family:'Permanent Marker', cursive;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    opacity:0.55;
+    margin-bottom:3px;
+    display:block;
+  }
+
+  .callout{
+    background:#151515;
+    border:1px dashed #fff;
+    border-radius:6px;
+    padding:12px 14px;
+    font-size:14px;
+    color:#fff;
+    margin-top:4px;
+  }
+  .callout b{ color:#fff; }
+
+  .exact-tap{
+    display:inline-block;
+    background:#1c1c1c;
+    border:1px solid #fff;
+    border-radius:5px;
+    padding:1px 7px;
+    font-size:13px;
+    font-weight:600;
+  }
+
+  /* ---------- CTA ---------- */
+  .cta-zone{ text-align:center; margin-top:32px; }
+  .cta-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:9px;
+    background:#fff;
+    color:#000;
+    text-decoration:none;
+    font-family:'Archivo Black', sans-serif;
+    font-weight:400;
+    font-size:16px;
+    padding:14px 28px;
+    border-radius:50px;
+  }
+  .cta-sub{ display:block; margin-top:12px; font-size:13px; color:var(--ink-soft); }
+
+  footer{ text-align:center; margin-top:44px; font-family:'Permanent Marker', cursive; font-size:16px; color:#6b6b68; }
+
+  a:focus-visible, button:focus-visible{ outline:3px solid #fff; outline-offset:2px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <img class="mascot-badge" src="images/mascot-badge.png" alt="La Otra Carrera">
+    <p class="kicker">no somos la NASA</p>
+    <h1>LA OTRA CARRERA</h1>
+    <p class="sub">El archivador de guías del colectivo. Busca tu tema, sigue los pasos, listo.</p>
+    <button id="share-btn" class="share-btn">↗ Compartir</button>
+  </header>
+
+  <!-- ============ HOME: folders ============ -->
+  <div id="view-home" class="panel active">
+    <div class="folder-grid">
+      <button class="folder" data-target="folder-colegio">
+        <div class="folder-emoji">🎒</div>
+        <div class="folder-name">Colegio y niños</div>
+        <div class="folder-count">1 guía</div>
+      </button>
+      <button class="folder" data-target="folder-cuentas">
+        <div class="folder-emoji">🧾</div>
+        <div class="folder-name">Cuentas y boletas</div>
+        <div class="folder-count">1 guía</div>
+      </button>
+      <button class="folder" data-target="folder-agenda">
+        <div class="folder-emoji">📅</div>
+        <div class="folder-name">Agenda y reuniones</div>
+        <div class="folder-count">1 guía</div>
+      </button>
+      <button class="folder" data-target="folder-mensajes">
+        <div class="folder-emoji">✉️</div>
+        <div class="folder-name">Mensajes difíciles</div>
+        <div class="folder-count">1 guía</div>
+      </button>
+    </div>
+  </div>
+
+  <!-- ============ FOLDER: colegio (list) ============ -->
+  <div id="folder-colegio" class="panel">
+    <button class="back-btn" data-back="view-home">← Todas las carpetas</button>
+    <div class="guide-list-item" data-target="guide-cartulina">
+      <span class="name">Entender un comunicado del colegio en 1 minuto</span>
+      <span class="arrow">›</span>
+    </div>
+  </div>
+
+  <!-- ============ FOLDER: cuentas (list) ============ -->
+  <div id="folder-cuentas" class="panel">
+    <button class="back-btn" data-back="view-home">← Todas las carpetas</button>
+    <div class="guide-list-item" data-target="guide-boleta">
+      <span class="name">Cuánto voy a pagar y por qué subió</span>
+      <span class="arrow">›</span>
+    </div>
+  </div>
+
+  <!-- ============ FOLDER: agenda (list) ============ -->
+  <div id="folder-agenda" class="panel">
+    <button class="back-btn" data-back="view-home">← Todas las carpetas</button>
+    <div class="guide-list-item" data-target="guide-reunion">
+      <span class="name">Ordenar una junta o reunión sin perderte en el chat</span>
+      <span class="arrow">›</span>
+    </div>
+  </div>
+
+  <!-- ============ FOLDER: mensajes (list) ============ -->
+  <div id="folder-mensajes" class="panel">
+    <button class="back-btn" data-back="view-home">← Todas las carpetas</button>
+    <div class="guide-list-item" data-target="guide-mensaje-dificil">
+      <span class="name">Escribir un mensaje incómodo sin quedar mal</span>
+      <span class="arrow">›</span>
+    </div>
+  </div>
+
+  <!-- ============ GUIDE: cartulina (detail) ============ -->
+  <div id="guide-cartulina" class="panel">
+    <button class="back-btn" data-back="folder-colegio">← Colegio y niños</button>
+    <h2 class="guide-title">Entender un comunicado del colegio en 1 minuto</h2>
+    <p class="guide-sub">Sirve para: circulares, grupos de WhatsApp del curso, agendas o cualquier papel/mensaje que te manden del colegio.</p>
+
+    <div class="block">
+      <div class="halftone-corner"></div>
+      <p class="block-label">Los 3 pasos (siempre los mismos)</p>
+      <ol class="steps">
+        <li><div><b>Abre el chat de tu IA.</b> El mismo que ya tengas abierto.</div></li>
+        <li><div><b>Mándale la foto</b> del papel o pantallazo, como le mandarías una foto a cualquier persona.</div></li>
+        <li><div><b>Háblale normal.</b> Dile "resúmeme esto" y listo.</div></li>
+      </ol>
+    </div>
+
+    <div class="block">
+      <div class="halftone-corner"></div>
+      <p class="block-label">Así se ve la conversación</p>
+      <div class="bubble-row">
+        <div class="bubble me"><span class="bubble-label">Tú</span>[le mandas la foto del comunicado]</div>
+        <div class="bubble me"><span class="bubble-label">Tú</span>"Resúmeme esto"</div>
+        <div class="bubble ia"><span class="bubble-label">IA</span>Es para el viernes: hay que llevar cartulina, témpera y pincel, no hay que pagar nada. <b>¿Quieres que te lo agende para no olvidarlo?</b></div>
+        <div class="bubble me"><span class="bubble-label">Tú</span>"Sí, el jueves"</div>
+        <div class="bubble ia"><span class="bubble-label">IA</span>Listo, queda agendado el jueves.</div>
+      </div>
+    </div>
+
+    <div class="callout" style="margin-top:2px;">
+      <b>Lo importante:</b> no hay que aprender frases exactas ni botones especiales. Es como hablar con una persona: le mandas la foto y le dices lo que necesitas, con tus propias palabras. La próxima vez, haces exactamente lo mismo: foto y hablas.
+    </div>
+
+    <div class="block" style="margin-top:16px;">
+      <div class="halftone-corner"></div>
+      <p class="block-label">También le puedes pedir</p>
+      <div class="bubble-row">
+        <div class="callout">🛒 <b>¿Hay que comprar materiales?</b> "¿Dónde los venden cerca de mí y cuánto cuestan?"</div>
+        <div class="callout">☀️ <b>¿Hay actividad al aire libre o deporte?</b> "¿Cómo va a estar el clima ese día?"</div>
+        <div class="callout">⏰ <b>¿No quieres olvidarlo?</b> "Avísame un día antes"</div>
+      </div>
+      <p style="font-size:13px;color:var(--ink-soft);margin:12px 0 0;">Es la misma conversación de siempre — solo le sigues preguntando lo que necesites.</p>
+    </div>
+  </div>
+
+  <!-- ============ GUIDE: boleta (detail) ============ -->
+  <div id="guide-boleta" class="panel">
+    <button class="back-btn" data-back="folder-cuentas">← Cuentas y boletas</button>
+    <h2 class="guide-title">Cuánto voy a pagar y por qué subió</h2>
+    <p class="guide-sub">Sirve para: luz, agua, gas, internet, o cualquier boleta que te llegue en papel o por correo.</p>
+
+    <div class="block">
+      <div class="halftone-corner"></div>
+      <p class="block-label">Los 3 pasos (siempre los mismos)</p>
+      <ol class="steps">
+        <li><div><b>Abre el chat de tu IA.</b> El mismo que ya tengas abierto.</div></li>
+        <li><div><b>Mándale la foto</b> de la boleta completa.</div></li>
+        <li><div><b>Háblale normal.</b> Dile "¿cuánto tengo que pagar y por qué subió?" y listo.</div></li>
+      </ol>
+    </div>
+
+    <div class="block">
+      <div class="halftone-corner"></div>
+      <p class="block-label">Así se ve la conversación</p>
+      <div class="bubble-row">
+        <div class="bubble me"><span class="bubble-label">Tú</span>[le mandas la foto de la boleta]</div>
+        <div class="bubble me"><span class="bubble-label">Tú</span>"¿Cuánto tengo que pagar y por qué subió?"</div>
+        <div class="bubble ia"><span class="bubble-label">IA</span>Tienes que pagar $X antes del día Y. Subió porque el consumo aumentó respecto al mes pasado. <b>¿Quieres que te avise unos días antes de que venza?</b></div>
+        <div class="bubble me"><span class="bubble-label">Tú</span>"Sí, avísame 3 días antes"</div>
+        <div class="bubble ia"><span class="bubble-label">IA</span>Listo, queda el recordatorio agendado.</div>
+      </div>
+    </div>
+
+    <div class="callout" style="margin-top:2px;">
+      <b>Lo importante:</b> son los mismos 3 pasos de siempre — foto y hablas. Si algo no te queda claro, sigues preguntando en el mismo chat, como a una persona.
+    </div>
+
+    <div class="block" style="margin-top:16px;">
+      <div class="halftone-corner"></div>
+      <p class="block-label">También le puedes pedir</p>
+      <div class="bubble-row">
+        <div class="callout">⏰ <b>¿No quieres olvidar pagarla?</b> "Avísame unos días antes de que venza"</div>
+        <div class="callout">📊 <b>¿Quieres saber si subió mucho?</b> "Compárala con la de hace 3 meses"</div>
+        <div class="callout">💡 <b>¿Quieres bajarla?</b> "Dame 3 formas simples de gastar menos"</div>
+        <div class="callout">📅 <b>¿Quieres planificar?</b> "Calcula cuánto me va a salir el resto del año, y cuánto debería salirme el próximo"</div>
+      </div>
+      <p style="font-size:13px;color:var(--ink-soft);margin:12px 0 0;">Es la misma conversación de siempre — solo le sigues preguntando lo que necesites.</p>
+    </div>
+  </div>
+
+  <!-- ============ GUIDE: reunion (detail) ============ -->
+  <div id="guide-reunion" class="panel">
+    <button class="back-btn" data-back="folder-agenda">← Agenda y reuniones</button>
+    <h2 class="guide-title">Ordenar una junta o reunión sin perderte en el chat</h2>
+    <p class="guide-sub">Sirve para: encontrar una fecha en común en un grupo de WhatsApp, ordenar quién dijo qué, o armar la convocatoria.</p>
+
+    <div class="block">
+      <div class="halftone-corner"></div>
+      <p class="block-label">Los 3 pasos (siempre los mismos)</p>
+      <ol class="steps">
+        <li><div><b>Abre el chat de tu IA.</b> El mismo que ya tengas abierto.</div></li>
+        <li><div><b>Mándale la captura</b> de la conversación del grupo con las fechas propuestas.</div></li>
+        <li><div><b>Háblale normal.</b> Dile "¿qué día les acomoda a la mayoría?" y listo.</div></li>
+      </ol>
+    </div>
+
+    <div class="block">
+      <div class="halftone-corner"></div>
+      <p class="block-label">Así se ve la conversación</p>
+      <div class="bubble-row">
+        <div class="bubble me"><span class="bubble-label">Tú</span>[le mandas la captura del grupo]</div>
+        <div class="bubble me"><span class="bubble-label">Tú</span>"¿Qué día les acomoda a la mayoría?"</div>
+        <div class="bubble ia"><span class="bubble-label">IA</span>La mayoría propuso el jueves a las 18:00. Solo dos personas dijeron que no podían ese día. <b>¿Quieres que te redacte el mensaje para confirmar la hora en el grupo?</b></div>
+        <div class="bubble me"><span class="bubble-label">Tú</span>"Sí, redáctalo"</div>
+        <div class="bubble ia"><span class="bubble-label">IA</span>Listo, aquí está el mensaje para copiar y pegar en el grupo.</div>
+      </div>
+    </div>
+
+    <div class="callout" style="margin-top:2px;">
+      <b>Lo importante:</b> no hay que releer el chat completo ni contar a mano quién dijo qué. Le mandas la captura y le preguntas lo que necesitas, como a una persona.
+    </div>
+
+    <div class="block" style="margin-top:16px;">
+      <div class="halftone-corner"></div>
+      <p class="block-label">También le puedes pedir</p>
+      <div class="bubble-row">
+        <div class="callout">📝 <b>¿Necesitas una tabla?</b> "Hazme una lista de quién puede y quién no"</div>
+        <div class="callout">📩 <b>¿Tienes que avisar?</b> "Redáctame un mensaje corto para confirmar la reunión"</div>
+        <div class="callout">⏰ <b>¿No quieres olvidarlo?</b> "Avísame una hora antes de la reunión"</div>
+      </div>
+      <p style="font-size:13px;color:var(--ink-soft);margin:12px 0 0;">Es la misma conversación de siempre — solo le sigues preguntando lo que necesites.</p>
+    </div>
+  </div>
+
+  <!-- ============ GUIDE: mensaje difícil (detail) ============ -->
+  <div id="guide-mensaje-dificil" class="panel">
+    <button class="back-btn" data-back="folder-mensajes">← Mensajes difíciles</button>
+    <h2 class="guide-title">Escribir un mensaje incómodo sin quedar mal</h2>
+    <p class="guide-sub">Sirve para: reclamar algo, decir que no, pedir un cambio, o hablar con el profe, el jefe o un vecino.</p>
+
+    <div class="block">
+      <div class="halftone-corner"></div>
+      <p class="block-label">Los 3 pasos (siempre los mismos)</p>
+      <ol class="steps">
+        <li><div><b>Abre el chat de tu IA.</b> El mismo que ya tengas abierto.</div></li>
+        <li><div><b>Cuéntale la situación</b> con tus palabras, como se la contarías a un amigo.</div></li>
+        <li><div><b>Háblale normal.</b> Dile "ayúdame a redactar el mensaje" y listo.</div></li>
+      </ol>
+    </div>
+
+    <div class="block">
+      <div class="halftone-corner"></div>
+      <p class="block-label">Así se ve la conversación</p>
+      <div class="bubble-row">
+        <div class="bubble me"><span class="bubble-label">Tú</span>"El profe me mandó un mensaje enojado, pero yo tengo razón. Ayúdame a responderle sin sonar agresivo"</div>
+        <div class="bubble ia"><span class="bubble-label">IA</span>Aquí tienes una respuesta clara y respetuosa que explica tu punto sin sonar a pelea. <b>¿Quieres que la haga más corta o más formal?</b></div>
+        <div class="bubble me"><span class="bubble-label">Tú</span>"Más corta"</div>
+        <div class="bubble ia"><span class="bubble-label">IA</span>Listo, aquí está la versión corta para copiar y pegar.</div>
+      </div>
+    </div>
+
+    <div class="callout" style="margin-top:2px;">
+      <b>Lo importante:</b> no hay que saber "la frase perfecta". Le cuentas lo que pasó con tus propias palabras y le pides ayuda, como a una persona de confianza.
+    </div>
+
+    <div class="block" style="margin-top:16px;">
+      <div class="halftone-corner"></div>
+      <p class="block-label">También le puedes pedir</p>
+      <div class="bubble-row">
+        <div class="callout">🙅 <b>¿Necesitas decir que no?</b> "Ayúdame a decir que no sin sonar mal"</div>
+        <div class="callout">😌 <b>¿Quieres bajarle el tono?</b> "Hazlo sonar más calmado"</div>
+        <div class="callout">📋 <b>¿No sabes cómo empezar?</b> "Dame 2 o 3 formas distintas de decir esto"</div>
+      </div>
+      <p style="font-size:13px;color:var(--ink-soft);margin:12px 0 0;">Es la misma conversación de siempre — solo le sigues preguntando lo que necesites.</p>
+    </div>
+  </div>
+
+  <div class="cta-zone">
+    <a class="cta-btn" href="#" id="whatsapp-link">Escríbenos</a>
+    <span class="cta-sub">¿No encontraste tu guía? Cuéntanos qué necesitas — la agregamos.</span>
+  </div>
+
+  <footer>hecho por gente normal, para gente normal</footer>
+</div>
+
+<script>
+  document.getElementById('whatsapp-link').href = "https://wa.me/56967002819";
+
+  document.getElementById('share-btn').addEventListener('click', async () => {
+    const shareData = {
+      title: 'La Otra Carrera — Guías fáciles',
+      text: 'Guías fáciles para usar la IA en el día a día',
+      url: window.location.href
+    };
+    if (navigator.share) {
+      try { await navigator.share(shareData); } catch (e) { /* usuario canceló, no hacer nada */ }
+    } else {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        const btn = document.getElementById('share-btn');
+        const original = btn.textContent;
+        btn.textContent = '✓ Link copiado';
+        setTimeout(() => { btn.textContent = original; }, 2000);
+      } catch (e) { /* clipboard no disponible */ }
+    }
+  });
+
+  function showPanel(id){
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo({top:0, behavior:'instant'});
+  }
+  document.querySelectorAll('[data-target]').forEach(el => {
+    el.addEventListener('click', () => showPanel(el.dataset.target));
+  });
+  document.querySelectorAll('[data-back]').forEach(el => {
+    el.addEventListener('click', () => showPanel(el.dataset.back));
+  });
+</script>
+<style>
+  .monito-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-bottom: -20px;
+    position: relative;
+    z-index: 1;
+  }
+  .monito-footer-img {
+    width: 140px;
+    height: auto;
+    transition: transform .15s;
+  }
+  .monito-footer-img.shake {
+    animation: monitoShake .4s ease;
+  }
+  @keyframes monitoShake {
+    0%   { transform: rotate(0deg) translateY(0); }
+    20%  { transform: rotate(-8deg) translateY(-6px); }
+    40%  { transform: rotate(7deg) translateY(-10px); }
+    60%  { transform: rotate(-5deg) translateY(-4px); }
+    80%  { transform: rotate(3deg) translateY(0); }
+    100% { transform: rotate(0deg) translateY(0); }
+  }
+
+  .footer-social {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    padding: 32px 0;
+    position: relative;
+    background: #000;
+  }
+  .footer-social a, .footer-social button {
+    background: #000;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #fff;
+    transition: transform .15s;
+  }
+  .footer-social a:active, .footer-social button:active {
+    transform: scale(0.9);
+  }
+
+  .social-tooltip {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%) scale(0.9);
+    background: #000;
+    color: #fff;
+    border: 3px solid #fff;
+    padding: 12px 20px;
+    border-radius: 4px;
+    font-family: inherit;
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    max-width: 260px;
+    text-align: center;
+    display: none;
+    z-index: 999;
+    box-shadow: 4px 4px 0 #fff;
+    opacity: 0;
+    transition: opacity .15s, transform .15s;
+  }
+  .social-tooltip.show {
+    display: block;
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+</style>
+
+<div class="monito-wrapper">
+  <img src="images/monito-footer.jpeg" alt="Monito de La Otra Carrera" class="monito-footer-img" id="monitoImg">
+
+</div>
+
+<footer class="footer-social">
+  <a href="https://github.com/laotracarrera/la-otra-carrera-" target="_blank" aria-label="GitHub">
+        <svg width="22" height="22" viewBox="0 0 16 16" fill="currentColor">
+      <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
+      0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13
+      -.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66
+      .07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15
+      -.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0
+      1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82
+      1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48
+      0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+    </svg>
+  </a>
+
+  <button aria-label="Discord" onclick="showTooltip('discord')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M20.3 4.4A19.7 19.7 0 0 0 15.5 3l-.3.6a14.7 14.7 0 0 1 4.2 1.6
+      c-3.6-1.7-7.9-1.7-11.5 0A14 14 0 0 1 8 3.6L7.7 3a19.7 19.7 0 0 0-4.8 1.4
+      C.4 9 -.4 13.4.1 17.8a20 20 0 0 0 5.7 2.9l1-1.3a12.6 12.6 0 0 1-1.9-.9l.4-.4
+      c3.6 1.7 7.6 1.7 11.2 0l.4.4c-.6.4-1.2.6-1.9.9l1 1.3a20 20 0 0 0 5.7-2.9
+      c.6-5.1-.7-9.5-2.4-13.4ZM8.5 15.3c-1.1 0-2-1-2-2.2s.9-2.2 2-2.2 2 1 2 2.2
+      -.9 2.2-2 2.2Zm7 0c-1.1 0-2-1-2-2.2s.9-2.2 2-2.2 2 1 2 2.2-.9 2.2-2 2.2Z"/>
+    </svg>
+  </button>
+
+  <button aria-label="Mastodon" onclick="showTooltip('mastodon')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M21.3 6.9c-.3-2.4-2.4-4.3-4.9-4.7C12.9 1.7 9.1 1.7 5.6 2.2
+      3.1 2.6 1 4.5.7 6.9.4 9.1.4 11.6.7 13.8c.4 2.7 2.6 4.7 5.3 5
+      1.2.1 2.4.2 3.5.1v-2.6c-1 .1-2 .1-3.2 0-1.7-.1-2.9-1.2-3.2-2.9
+      -.1-.5-.1-1.1-.1-1.7.9.6 2.1 1 3.6 1.1v-2.4c-1.3-.1-2.3-.4-3-.9
+      -.9-.6-1.4-1.6-1.4-2.9 0-1.9 1.2-3.4 3.5-3.4 2.1 0 3.3 1.4 3.3 3.6v4.9
+      h2.5V9.6c0-2.2 1.2-3.6 3.3-3.6 2.3 0 3.5 1.5 3.5 3.4 0 1.3-.5 2.3-1.4 2.9
+      -.7.5-1.7.8-3 .9v2.4c1.5-.1 2.7-.5 3.6-1.1 0 .6 0 1.2-.1 1.7
+      -.3 1.7-1.5 2.8-3.2 2.9-1.2.1-2.2.1-3.2 0v2.6c1.1.1 2.3 0 3.5-.1
+      2.7-.3 4.9-2.3 5.3-5 .3-2.2.3-4.7 0-6.9Z"/>
+    </svg>
+  </button>
+
+  <div class="social-tooltip" id="socialTooltip">⚠ Todavía no — necesita autorización</div>
+</footer>
+
+<script>
+  function showTooltip(platform) {
+    const tip = document.getElementById('socialTooltip');
+    tip.classList.add('show');
+    clearTimeout(window._tipTimeout);
+    window._tipTimeout = setTimeout(() => tip.classList.remove('show'), 2500);
+
+    const monito = document.getElementById('monitoImg');
+    monito.classList.remove('shake');
+    void monito.offsetWidth;
+    monito.classList.add('shake');
+  }
+</script>
+</body>
+</html>
+
