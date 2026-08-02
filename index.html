@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LEGENDARY BROKER — La Otra Carrera</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black: #080808;
+    --panel: #101010;
+    --panel-2: #161616;
+    --white: #F5F5F0;
+    --metal: #8A8A8A;
+    --metal-dim: #4E4E4E;
+    --red: #C41E1E;
+    --red-dim: #6B1010;
+    --line: rgba(245,245,240,0.08);
+    --ff-display: 'Anton', sans-serif;
+    --ff-mono: 'IBM Plex Mono', monospace;
+    --ff-body: 'Inter', sans-serif;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--black);
+    color:var(--white);
+    font-family:var(--ff-body);
+    overflow-x:hidden;
+  }
+  ::selection{background:var(--red);color:var(--white);}
+  a{color:inherit;text-decoration:none;}
+  button{font-family:inherit;cursor:pointer;}
+
+  :focus-visible{
+    outline:2px solid var(--red);
+    outline-offset:3px;
+  }
+
+  /* ---------- grain overlay ---------- */
+  .grain{
+    position:fixed;inset:0;
+    pointer-events:none;
+    z-index:9999;
+    opacity:.05;
+    mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .scanlines{
+    position:fixed;inset:0;
+    pointer-events:none;
+    z-index:9998;
+    opacity:.035;
+    background:repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 2px,
+      #fff 3px,
+      transparent 4px
+    );
+  }
+
+  /* ---------- ACCESS GATE ---------- */
+  #gate{
+    position:fixed;inset:0;
+    z-index:100;
+    background:var(--black);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:24px;
+    transition:opacity .8s ease, visibility .8s ease;
+  }
+  #gate.hidden{opacity:0;visibility:hidden;pointer-events:none;}
+
+  .gate-eyebrow{
+    font-family:var(--ff-mono);
+    font-size:11px;
+    letter-spacing:.35em;
+    color:var(--red);
+    margin-bottom:20px;
+  }
+  .gate-title{
+    font-family:var(--ff-display);
+    font-size:clamp(28px,6vw,52px);
+    letter-spacing:.04em;
+    line-height:1.05;
+    max-width:720px;
+    margin-bottom:14px;
+  }
+  .gate-sub{
+    font-family:var(--ff-mono);
+    font-size:12px;
+    color:var(--metal);
+    max-width:480px;
+    line-height:1.7;
+    margin-bottom:40px;
+  }
+  .gate-form{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:14px;
+    width:100%;
+    max-width:340px;
+  }
+  #gate-input{
+    width:100%;
+    background:transparent;
+    border:1px solid var(--line);
+    border-bottom:1px solid var(--metal-dim);
+    color:var(--white);
+    font-family:var(--ff-mono);
+    letter-spacing:.3em;
+    text-align:center;
+    text-transform:uppercase;
+    font-size:14px;
+    padding:16px 12px;
+  }
+  #gate-input::placeholder{color:var(--metal-dim);letter-spacing:.2em;}
+  .gate-btn{
+    width:100%;
+    background:var(--white);
+    color:var(--black);
+    border:none;
+    font-family:var(--ff-mono);
+    font-weight:600;
+    font-size:11px;
+    letter-spacing:.25em;
+    padding:16px;
+    transition:background .2s ease;
+  }
+  .gate-btn:hover{background:var(--red);color:var(--white);}
+
+  .gate-error{
+    font-family:var(--ff-mono);
+    font-size:11px;
+    color:var(--red);
+    letter-spacing:.1em;
+    height:16px;
+    opacity:0;
+  }
+  .gate-error.show{opacity:1;animation:glitch-text .25s steps(2);}
+  #gate.shake{animation:shake .35s;}
+  @keyframes shake{
+    0%,100%{transform:translateX(0);}
+    20%{transform:translateX(-6px);}
+    40%{transform:translateX(6px);}
+    60%{transform:translateX(-4px);}
+    80%{transform:translateX(4px);}
+  }
+  @keyframes glitch-text{
+    0%{clip-path:inset(0 0 60% 0);transform:translateX(-2px);}
+    50%{clip-path:inset(40% 0 20% 0);transform:translateX(2px);}
+    100%{clip-path:inset(0 0 0 0);transform:translateX(0);}
+  }
+
+  .gate-hint{
+    margin-top:28px;
+    font-family:var(--ff-mono);
+    font-size:10px;
+    color:var(--metal-dim);
+    letter-spacing:.1em;
+  }
+
+  /* ---------- NAV ---------- */
+  header{
+    position:fixed;
+    top:0;left:0;right:0;
+    z-index:50;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:22px 5%;
+    background:linear-gradient(to bottom, rgba(8,8,8,.9), transparent);
+  }
+  .logo{
+    font-family:var(--ff-display);
+    font-size:16px;
+    letter-spacing:.08em;
+  }
+  .logo span{color:var(--red);}
+  nav{
+    display:flex;
+    gap:28px;
+    font-family:var(--ff-mono);
+    font-size:11px;
+    letter-spacing:.15em;
+  }
+  nav a{
+    color:var(--metal);
+    position:relative;
+    padding-bottom:4px;
+    transition:color .2s ease;
+  }
+  nav a:hover{color:var(--white);}
+  nav a::after{
+    content:'';
+    position:absolute;
+    left:0;bottom:0;
+    width:0;height:1px;
+    background:var(--red);
+    transition:width .25s ease;
+  }
+  nav a:hover::after{width:100%;}
+  @media (max-width:820px){ nav{display:none;} }
+
+  /* ---------- HERO ---------- */
+  #hero{
+    min-height:100svh;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-end;
+    position:relative;
+    padding:0 5% 90px;
+    background:
+      radial-gradient(ellipse at 50% 20%, rgba(196,30,30,.12), transparent 55%),
+      repeating-linear-gradient(115deg, #0c0c0c 0 2px, #080808 2px 4px);
+  }
+  .hero-frame{
+    position:absolute;
+    inset:24px;
+    border:1px solid var(--line);
+    pointer-events:none;
+  }
+  .hero-eyebrow{
+    font-family:var(--ff-mono);
+    font-size:11px;
+    letter-spacing:.35em;
+    color:var(--red);
+    margin-bottom:18px;
+  }
+  h1.hero-title{
+    font-family:var(--ff-display);
+    font-size:clamp(48px,11vw,150px);
+    line-height:.92;
+    letter-spacing:.01em;
+    max-width:1100px;
+  }
+  .hero-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    gap:30px;
+    margin-top:36px;
+    flex-wrap:wrap;
+  }
+  .hero-desc{
+    font-family:var(--ff-body);
+    font-size:15px;
+    color:var(--metal);
+    max-width:420px;
+    line-height:1.7;
+  }
+  .cta{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    font-family:var(--ff-mono);
+    font-size:11px;
+    letter-spacing:.2em;
+    color:var(--white);
+    border:1px solid var(--metal-dim);
+    padding:16px 26px;
+    white-space:nowrap;
+    transition:border-color .2s ease, background .2s ease;
+  }
+  .cta:hover{border-color:var(--red);background:rgba(196,30,30,.08);}
+  .cta.solid{background:var(--red);border-color:var(--red);}
+  .cta.solid:hover{background:transparent;}
+
+  /* ---------- SECTION SHELL ---------- */
+  section{padding:130px 5%;position:relative;}
+  .section-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:56px;
+    gap:20px;
+    flex-wrap:wrap;
+    border-bottom:1px solid var(--line);
+    padding-bottom:22px;
+  }
+  .section-eyebrow{
+    font-family:var(--ff-mono);
+    font-size:11px;
+    letter-spacing:.3em;
+    color:var(--red);
+  }
+  .section-title{
+    font-family:var(--ff-display);
+    font-size:clamp(28px,4vw,46px);
+    letter-spacing:.02em;
+  }
+
+  /* ---------- PROTOCOLO ---------- */
+  #protocolo{background:var(--panel);}
+  .clauses{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+  }
+  .clause{
+    background:var(--panel);
+    padding:32px 28px;
+  }
+  .clause-num{
+    font-family:var(--ff-mono);
+    font-size:11px;
+    color:var(--red);
+    letter-spacing:.15em;
+    margin-bottom:14px;
+    display:block;
+  }
+  .clause h3{
+    font-family:var(--ff-body);
+    font-weight:600;
+    font-size:15px;
+    margin-bottom:10px;
+    letter-spacing:.02em;
+  }
+  .clause p{
+    font-family:var(--ff-mono);
+    font-size:12px;
+    color:var(--metal);
+    line-height:1.75;
+  }
+  .redacted{
+    display:inline-block;
+    background:var(--white);
+    color:var(--white);
+    padding:0 4px;
+    user-select:none;
+  }
+
+  /* ---------- REELS ---------- */
+  .reel-wrap{
+    position:relative;
+    aspect-ratio:16/9;
+    background:#000;
+    border:1px solid var(--line);
+    overflow:hidden;
+  }
+  .reel-wrap iframe{
+    width:100%;height:100%;border:0;display:block;
+  }
+  .reel-caption{
+    display:flex;
+    justify-content:space-between;
+    margin-top:16px;
+    font-family:var(--ff-mono);
+    font-size:11px;
+    color:var(--metal);
+    letter-spacing:.05em;
+  }
+  #otra-carrera .section-head{border-color:var(--red-dim);}
+
+  /* ---------- EXPEDIENTES ---------- */
+  #expedientes{background:var(--panel);}
+  .exp-note{
+    font-family:var(--ff-mono);
+    font-size:12px;
+    color:var(--metal-dim);
+    margin-bottom:44px;
+    max-width:520px;
+    line-height:1.8;
+  }
+  .exp-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+    gap:2px;
+    background:var(--line);
+    border:1px solid var(--line);
+  }
+  .exp-card{
+    background:var(--panel-2);
+    position:relative;
+    cursor:pointer;
+    overflow:hidden;
+    border:none;
+    text-align:left;
+    color:inherit;
+    padding:0;
+  }
+  .exp-card img{
+    width:100%;
+    aspect-ratio:1/1;
+    object-fit:cover;
+    filter:grayscale(1) contrast(1.15) brightness(.85);
+    display:block;
+    transition:filter .35s ease, transform .5s ease;
+  }
+  .exp-card:hover img{
+    filter:grayscale(.2) contrast(1.05) brightness(.95);
+    transform:scale(1.04);
+  }
+  .exp-tag{
+    position:absolute;
+    top:10px;left:10px;
+    font-family:var(--ff-mono);
+    font-size:10px;
+    letter-spacing:.15em;
+    background:rgba(8,8,8,.75);
+    padding:5px 9px;
+    border:1px solid var(--line);
+  }
+  .exp-scan{
+    position:absolute;inset:0;
+    background:repeating-linear-gradient(to bottom, transparent 0 3px, rgba(0,0,0,.25) 3px 4px);
+    pointer-events:none;
+  }
+
+  /* modal */
+  #exp-modal{
+    position:fixed;inset:0;
+    z-index:80;
+    background:rgba(4,4,4,.94);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    opacity:0;visibility:hidden;
+    transition:opacity .3s ease, visibility .3s ease;
+  }
+  #exp-modal.open{opacity:1;visibility:visible;}
+  .modal-box{
+    background:var(--panel);
+    border:1px solid var(--line);
+    max-width:520px;
+    width:100%;
+    padding:30px;
+  }
+  .modal-img-wrap{
+    background:#000;
+    border:1px solid var(--line);
+    margin-bottom:20px;
+    overflow:hidden;
+  }
+  .modal-img-wrap img{width:100%;display:block;}
+  .modal-tag{
+    font-family:var(--ff-mono);
+    font-size:11px;
+    color:var(--red);
+    letter-spacing:.2em;
+    margin-bottom:8px;
+  }
+  .modal-title{
+    font-family:var(--ff-body);
+    font-weight:600;
+    font-size:15px;
+    margin-bottom:16px;
+  }
+  .modal-code{
+    font-family:var(--ff-mono);
+    font-size:13px;
+    background:var(--black);
+    border:1px dashed var(--red);
+    padding:14px;
+    text-align:center;
+    letter-spacing:.15em;
+    margin-bottom:16px;
+  }
+  .modal-code b{color:var(--red);}
+  .modal-close{
+    display:block;
+    width:100%;
+    background:transparent;
+    border:1px solid var(--metal-dim);
+    color:var(--white);
+    font-family:var(--ff-mono);
+    font-size:11px;
+    letter-spacing:.2em;
+    padding:14px;
+  }
+  .modal-close:hover{border-color:var(--white);}
+
+  /* ---------- CANJE ---------- */
+  #canje{
+    text-align:center;
+  }
+  .canje-box{
+    max-width:440px;
+    margin:0 auto;
+  }
+  .canje-form{
+    display:flex;
+    gap:10px;
+    margin-top:28px;
+  }
+  #code-input{
+    flex:1;
+    background:transparent;
+    border:1px solid var(--line);
+    border-bottom:1px solid var(--metal-dim);
+    color:var(--white);
+    font-family:var(--ff-mono);
+    text-align:center;
+    text-transform:uppercase;
+    letter-spacing:.2em;
+    padding:15px;
+    font-size:13px;
+  }
+  .canje-btn{
+    background:var(--white);
+    color:var(--black);
+    border:none;
+    font-family:var(--ff-mono);
+    font-size:11px;
+    letter-spacing:.2em;
+    padding:0 22px;
+  }
+  .canje-btn:hover{background:var(--red);color:var(--white);}
+  .canje-result{
+    margin-top:20px;
+    font-family:var(--ff-mono);
+    font-size:12px;
+    min-height:20px;
+  }
+  .canje-result.ok{color:#6FCF97;}
+  .canje-result.err{color:var(--red);}
+  .repo-link{
+    display:inline-block;
+    margin-top:16px;
+    border:1px solid #6FCF97;
+    color:#6FCF97;
+    padding:14px 26px;
+    font-family:var(--ff-mono);
+    font-size:11px;
+    letter-spacing:.2em;
+  }
+
+  /* ---------- FOOTER / CTA FINAL ---------- */
+  footer{
+    background:var(--black);
+    border-top:1px solid var(--line);
+    padding:90px 5% 40px;
+    text-align:center;
+  }
+  .footer-title{
+    font-family:var(--ff-display);
+    font-size:clamp(32px,6vw,68px);
+    margin-bottom:26px;
+  }
+  .footer-title span{color:var(--red);}
+  .footer-meta{
+    display:flex;
+    justify-content:center;
+    gap:30px;
+    margin-top:70px;
+    font-family:var(--ff-mono);
+    font-size:10px;
+    letter-spacing:.15em;
+    color:var(--metal-dim);
+    flex-wrap:wrap;
+  }
+</style>
+</head>
+<body>
+<!-- GoatCounter: analítica de visitas + eventos de intentos de clave -->
+<script data-goatcounter="https://legendarybroker.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+
+<div class="grain"></div>
+<div class="scanlines"></div>
+
+<!-- ============ ACCESS GATE ============ -->
+<div id="gate">
+  <div class="gate-eyebrow">ACCESO RESTRINGIDO · NIVEL 01</div>
+  <h1 class="gate-title">ESTA ES UNA PÁGINA CONFIDENCIAL</h1>
+  <p class="gate-sub">Todo intento de acceso queda registrado. Su dirección IP y huella de dispositivo están siendo verificadas contra la lista de invitados autorizados.</p>
+  <form class="gate-form" id="gate-form">
+    <input type="password" id="gate-input" placeholder="CLAVE DE ACCESO" autocomplete="off">
+    <button type="submit" class="gate-btn">DESBLOQUEAR EXPEDIENTE →</button>
+    <div class="gate-error" id="gate-error">CLAVE INCORRECTA — INTENTO REGISTRADO</div>
+  </form>
+  <div class="gate-hint">clave de demostración: LEGENDARY</div>
+</div>
+
+<!-- ============ NAV ============ -->
+<header>
+  <div class="logo">LEGENDARY <span>BROKER</span></div>
+  <nav>
+    <a href="#protocolo">PROTOCOLO</a>
+    <a href="#reel">REEL</a>
+    <a href="#otra-carrera">LA OTRA CARRERA</a>
+    <a href="#expedientes">EXPEDIENTES</a>
+    <a href="#canje">CANJE</a>
+  </nav>
+</header>
+
+<!-- ============ HERO ============ -->
+<section id="hero">
+  <div class="hero-frame"></div>
+  <div class="hero-eyebrow">EXPEDIENTE 000 · CLASIFICACIÓN: EXCLUSIVA</div>
+  <h1 class="hero-title">LA OTRA<br>CARRERA</h1>
+  <div class="hero-row">
+    <p class="hero-desc">No es una guía. Es un expediente. Una operación documentada para quienes decidieron abandonar la ruta convencional.</p>
+    <a href="#otra-carrera" class="cta solid">VER EXPEDIENTE PRINCIPAL →</a>
+  </div>
+</section>
+
+<!-- ============ PROTOCOLO ============ -->
+<section id="protocolo">
+  <div class="section-head">
+    <div>
+      <div class="section-eyebrow">DOCUMENTO 01</div>
+      <div class="section-title">Protocolo de Confidencialidad</div>
+    </div>
+  </div>
+  <div class="clauses">
+    <div class="clause">
+      <span class="clause-num">CLÁUSULA A</span>
+      <h3>Uso estrictamente personal</h3>
+      <p>El contenido de este expediente no puede ser redistribuido, capturado ni reenviado. Cada sesión queda <span class="redacted">marcada</span> con un identificador único.</p>
+    </div>
+    <div class="clause">
+      <span class="clause-num">CLÁUSULA B</span>
+      <h3>Cero solicitudes comerciales</h3>
+      <p>No se aceptan propuestas, pitches ni ofertas de terceros dentro de este canal. Cualquier intento será descartado sin respuesta.</p>
+    </div>
+    <div class="clause">
+      <span class="clause-num">CLÁUSULA C</span>
+      <h3>Trazabilidad activa</h3>
+      <p>Dirección IP, dispositivo y comportamiento de navegación son registrados por motivos de seguridad. El uso de VPN no garantiza anonimato.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ REEL COMERCIAL ============ -->
+<section id="reel">
+  <div class="section-head">
+    <div>
+      <div class="section-eyebrow">DOCUMENTO 02</div>
+      <div class="section-title">Reel Comercial</div>
+    </div>
+  </div>
+  <div class="reel-wrap">
+    <iframe src="https://player.vimeo.com/video/76979871?title=0&byline=0&portrait=0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+  </div>
+  <div class="reel-caption">
+    <span>REEL_COMERCIAL_MASTER.MP4</span>
+    <span>DURACIÓN 01:42 · REEMPLAZAR CON ID DE VIMEO REAL</span>
+  </div>
+</section>
+
+<!-- ============ LA OTRA CARRERA (pieza central) ============ -->
+<section id="otra-carrera">
+  <div class="section-head">
+    <div>
+      <div class="section-eyebrow" style="color:var(--red)">DOCUMENTO 03 · PIEZA CENTRAL</div>
+      <div class="section-title">La Otra Carrera</div>
+    </div>
+  </div>
+  <div class="reel-wrap">
+    <iframe src="https://player.vimeo.com/video/76979871?title=0&byline=0&portrait=0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+  </div>
+  <div class="reel-caption">
+    <span>LA_OTRA_CARRERA_FINAL.MP4</span>
+    <span>REEMPLAZAR CON ID DE VIMEO REAL</span>
+  </div>
+</section>
+
+<!-- ============ EXPEDIENTES (galería de GIFs) ============ -->
+<section id="expedientes">
+  <div class="section-head">
+    <div>
+      <div class="section-eyebrow">DOCUMENTO 04 · ARCHIVO INTERNO</div>
+      <div class="section-title">Expedientes</div>
+    </div>
+  </div>
+  <p class="exp-note">Diez fragmentos del archivo. Todos catalogados por igual. Algunos, al examinarse de cerca, contienen algo más que humor interno.</p>
+
+  <div class="exp-grid" id="exp-grid"></div>
+</section>
+
+<!-- modal -->
+<div id="exp-modal">
+  <div class="modal-box">
+    <div class="modal-tag" id="modal-tag">EXPEDIENTE #000</div>
+    <div class="modal-img-wrap"><img id="modal-img" src="" alt=""></div>
+    <div class="modal-title" id="modal-title">—</div>
+    <div class="modal-code" id="modal-code-wrap" style="display:none;">
+      CÓDIGO LOCALIZADO: <b id="modal-code"></b><br>
+      <span style="color:var(--metal);font-size:11px;">Canjéalo más abajo, en la sección CANJE.</span>
+    </div>
+    <button class="modal-close" id="modal-close">CERRAR EXPEDIENTE</button>
+  </div>
+</div>
+
+<!-- ============ CANJE DE CÓDIGO ============ -->
+<section id="canje">
+  <div class="canje-box">
+    <div class="section-eyebrow">DOCUMENTO 05</div>
+    <div class="section-title" style="margin-top:8px;">Canjear Código</div>
+    <p class="exp-note" style="margin:20px auto 0;">Si encontraste un código dentro de un expediente, ingrésalo aquí para acceder al repositorio.</p>
+    <form class="canje-form" id="canje-form">
+      <input type="text" id="code-input" placeholder="LB-XXXX" maxlength="10">
+      <button type="submit" class="canje-btn">VALIDAR</button>
+    </form>
+    <div class="canje-result" id="canje-result"></div>
+  </div>
+</section>
+
+<!-- ============ FOOTER / CTA FINAL ============ -->
+<footer id="contacto">
+  <div class="section-eyebrow">DOCUMENTO FINAL</div>
+  <div class="footer-title">SOLICITAR <span>ACCESO</span></div>
+  <a href="mailto:contacto@legendarybroker.com" class="cta solid">CONTACTO RESTRINGIDO →</a>
+  <div class="footer-meta">
+    <span>LEGENDARY BROKER © 2026</span>
+    <span>TODAS LAS SESIONES SON REGISTRADAS</span>
+    <span>NO REDISTRIBUIR</span>
+  </div>
+</footer>
+
+<script>
+  // ---------- GATE ----------
+  const gate = document.getElementById('gate');
+  const gateForm = document.getElementById('gate-form');
+  const gateInput = document.getElementById('gate-input');
+  const gateError = document.getElementById('gate-error');
+  const PASSWORD = 'LEGENDARY';
+
+  function trackEvent(path, title){
+    if(window.goatcounter && window.goatcounter.count){
+      window.goatcounter.count({ path: path, title: title, event: true });
+    }
+  }
+
+  gateForm.addEventListener('submit', e=>{
+    e.preventDefault();
+    if(gateInput.value.trim().toUpperCase() === PASSWORD){
+      trackEvent('gate-success', 'Acceso concedido');
+      gate.classList.add('hidden');
+      document.body.style.overflow = 'auto';
+    } else {
+      trackEvent('gate-fail', 'Intento de clave fallido');
+      gateError.classList.remove('show');
+      void gateError.offsetWidth;
+      gateError.classList.add('show');
+      gate.classList.remove('shake');
+      void gate.offsetWidth;
+      gate.classList.add('shake');
+    }
+  });
+
+  // ---------- EXPEDIENTES DATA ----------
+  // 4 de los 10 traen código oculto (secretCode !== null)
+  const expedientes = [
+    {id:'001', file:'assets/exp-001.gif', title:'Registro sin clasificar', code:null},
+    {id:'002', file:'assets/exp-002.gif', title:'Fragmento recuperado', code:'LB-4X17'},
+    {id:'003', file:'assets/exp-003.gif', title:'Registro sin clasificar', code:null},
+    {id:'004', file:'assets/exp-004.gif', title:'Anomalía visual', code:'LB-9K52'},
+    {id:'005', file:'assets/exp-005.gif', title:'Registro sin clasificar', code:null},
+    {id:'006', file:'assets/exp-006.gif', title:'Registro sin clasificar', code:null},
+    {id:'007', file:'assets/exp-007.gif', title:'Fragmento recuperado', code:'LB-2Q88'},
+    {id:'008', file:'assets/exp-008.gif', title:'Registro sin clasificar', code:null},
+    {id:'009', file:'assets/exp-009.gif', title:'Registro sin clasificar', code:null},
+    {id:'010', file:'assets/exp-010.gif', title:'Anomalía visual', code:'LB-7Z31'},
+  ];
+
+  const grid = document.getElementById('exp-grid');
+  expedientes.forEach(exp=>{
+    const card = document.createElement('button');
+    card.className = 'exp-card';
+    card.innerHTML = `
+      <img src="${exp.file}" alt="Expediente ${exp.id}" loading="lazy">
+      <span class="exp-tag">EXPEDIENTE #${exp.id}</span>
+      <div class="exp-scan"></div>
+    `;
+    card.addEventListener('click', ()=>openModal(exp));
+    grid.appendChild(card);
+  });
+
+  // ---------- MODAL ----------
+  const modal = document.getElementById('exp-modal');
+  const modalImg = document.getElementById('modal-img');
+  const modalTag = document.getElementById('modal-tag');
+  const modalTitle = document.getElementById('modal-title');
+  const modalCodeWrap = document.getElementById('modal-code-wrap');
+  const modalCode = document.getElementById('modal-code');
+
+  function openModal(exp){
+    modalImg.src = exp.file;
+    modalTag.textContent = `EXPEDIENTE #${exp.id}`;
+    modalTitle.textContent = exp.title;
+    if(exp.code){
+      modalCodeWrap.style.display = 'block';
+      modalCode.textContent = exp.code;
+    } else {
+      modalCodeWrap.style.display = 'none';
+    }
+    modal.classList.add('open');
+  }
+  document.getElementById('modal-close').addEventListener('click', ()=> modal.classList.remove('open'));
+  modal.addEventListener('click', e=>{ if(e.target === modal) modal.classList.remove('open'); });
+
+  // ---------- CANJE ----------
+  const VALID_CODES = expedientes.filter(e=>e.code).map(e=>e.code);
+  const GITHUB_REPO_URL = 'https://github.com/TU-USUARIO/TU-REPOSITORIO'; // ← reemplazar con tu repo real
+
+  const canjeForm = document.getElementById('canje-form');
+  const codeInput = document.getElementById('code-input');
+  const canjeResult = document.getElementById('canje-result');
+
+  canjeForm.addEventListener('submit', e=>{
+    e.preventDefault();
+    const val = codeInput.value.trim().toUpperCase();
+    if(VALID_CODES.includes(val)){
+      canjeResult.className = 'canje-result ok';
+      canjeResult.innerHTML = `CÓDIGO VÁLIDO — ACCESO CONCEDIDO<br><a href="${GITHUB_REPO_URL}" target="_blank" class="repo-link">IR AL REPOSITORIO →</a>`;
+    } else {
+      canjeResult.className = 'canje-result err';
+      canjeResult.textContent = 'CÓDIGO NO RECONOCIDO. VERIFICA E INTENTA DE NUEVO.';
+    }
+  });
+</script>
+
+</body>
+</html>
