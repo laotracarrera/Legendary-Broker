@@ -749,7 +749,7 @@
   const PASSWORD = 'LEGENDARY';
 
   function trackEvent(path, title){
-    if(window.goatcounter && window.goatcounter.count){
+    if(typeof window.goatcounter !== 'undefined' && window.goatcounter.count){
       window.goatcounter.count({ path: path, title: title, event: true });
     }
   }
