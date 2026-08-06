@@ -24,31 +24,32 @@ body{background:var(--void);color:var(--ink);font-family:var(--display);overflow
 a{color:inherit;text-decoration:none;}
 img,video{max-width:100%;display:block;}
 
-/* ===== SCROLL REVEAL ===== */
-.reveal{opacity:0;transform:translateY(44px);transition:opacity .9s var(--ease), transform .9s var(--ease);}
-.reveal.visible{opacity:1;transform:none;}
-.reveal-left{opacity:0;transform:translateX(-60px);transition:opacity .9s var(--ease), transform .9s var(--ease);}
-.reveal-left.visible{opacity:1;transform:none;}
-.reveal-right{opacity:0;transform:translateX(60px);transition:opacity .9s var(--ease), transform .9s var(--ease);}
-.reveal-right.visible{opacity:1;transform:none;}
-.reveal-scale{opacity:0;transform:scale(.92);transition:opacity 1s var(--ease), transform 1s var(--ease);}
-.reveal-scale.visible{opacity:1;transform:none;}
+/* ===== SCROLL REVEAL — initial states only active when JS adds html.js-anim ===== */
+html.js-anim .reveal{opacity:0;transform:translateY(44px);transition:opacity .9s var(--ease), transform .9s var(--ease);}
+html.js-anim .reveal.visible{opacity:1;transform:none;}
+html.js-anim .reveal-left{opacity:0;transform:translateX(-60px);transition:opacity .9s var(--ease), transform .9s var(--ease);}
+html.js-anim .reveal-left.visible{opacity:1;transform:none;}
+html.js-anim .reveal-right{opacity:0;transform:translateX(60px);transition:opacity .9s var(--ease), transform .9s var(--ease);}
+html.js-anim .reveal-right.visible{opacity:1;transform:none;}
+html.js-anim .reveal-scale{opacity:0;transform:scale(.92);transition:opacity 1s var(--ease), transform 1s var(--ease);}
+html.js-anim .reveal-scale.visible{opacity:1;transform:none;}
 
 /* staggered children */
-.stagger > *{opacity:0;transform:translateY(32px);transition:opacity .7s var(--ease), transform .7s var(--ease);}
-.stagger.visible > *{opacity:1;transform:none;}
-.stagger.visible > *:nth-child(1){transition-delay:.05s}
-.stagger.visible > *:nth-child(2){transition-delay:.15s}
-.stagger.visible > *:nth-child(3){transition-delay:.25s}
-.stagger.visible > *:nth-child(4){transition-delay:.35s}
-.stagger.visible > *:nth-child(5){transition-delay:.45s}
-.stagger.visible > *:nth-child(6){transition-delay:.55s}
-.stagger.visible > *:nth-child(7){transition-delay:.65s}
+html.js-anim .stagger > *{opacity:0;transform:translateY(32px);transition:opacity .7s var(--ease), transform .7s var(--ease);}
+html.js-anim .stagger.visible > *{opacity:1;transform:none;}
+html.js-anim .stagger.visible > *:nth-child(1){transition-delay:.05s}
+html.js-anim .stagger.visible > *:nth-child(2){transition-delay:.15s}
+html.js-anim .stagger.visible > *:nth-child(3){transition-delay:.25s}
+html.js-anim .stagger.visible > *:nth-child(4){transition-delay:.35s}
+html.js-anim .stagger.visible > *:nth-child(5){transition-delay:.45s}
+html.js-anim .stagger.visible > *:nth-child(6){transition-delay:.55s}
+html.js-anim .stagger.visible > *:nth-child(7){transition-delay:.65s}
 
 /* ===== HEADING REVEAL MASK ===== */
 .h-reveal-wrap{overflow:hidden;display:block;}
-.h-word-inner{display:block;transform:translateY(110%);transition:transform 1s var(--ease-out);}
-.h-reveal-wrap.visible .h-word-inner{transform:translateY(0);}
+.h-word-inner{display:block;transition:transform 1s var(--ease-out);}
+html.js-anim .h-word-inner{transform:translateY(110%);}
+html.js-anim .h-reveal-wrap.visible .h-word-inner{transform:translateY(0);}
 
 /* ===== crossfade sequence ===== */
 .seq{position:relative;overflow:hidden;background:#000;}
@@ -73,8 +74,9 @@ img,video{max-width:100%;display:block;}
 .copy-block p.gap{margin-bottom:26px;}
 
 /* ===== CINEMATIC SECTION DIVIDER ===== */
-.divider{height:2px;width:0;background:linear-gradient(90deg,var(--red-bright),transparent);transition:width 1.4s var(--ease);margin-bottom:36px;}
-.divider.visible{width:100%;}
+.divider{height:2px;width:100%;background:linear-gradient(90deg,var(--red-bright),transparent);margin-bottom:36px;}
+html.js-anim .divider{width:0;transition:width 1.4s var(--ease);}
+html.js-anim .divider.visible{width:100%;}
 .divider-warm{background:linear-gradient(90deg,var(--amber),transparent);}
 
 /* ===== 00 OPENING ===== */
@@ -95,8 +97,9 @@ img,video{max-width:100%;display:block;}
 .pure-text{min-height:70vh;display:flex;align-items:center;justify-content:center;text-align:center;background:var(--void);padding:60px 24px;position:relative;overflow:hidden;}
 .pure-text p{font-family:var(--display);font-weight:900;text-transform:uppercase;letter-spacing:.01em;font-size:clamp(28px,5vw,54px);line-height:1.35;color:var(--ink);}
 .pure-text.turn p{text-transform:none;font-size:clamp(30px,4.6vw,52px);letter-spacing:0;max-width:820px;}
-.pure-text::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--red-bright);transform:scaleY(0);transform-origin:top;transition:transform 1.2s var(--ease);}
-.pure-text.visible::before{transform:scaleY(1);}
+.pure-text::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--red-bright);}
+html.js-anim .pure-text::before{transform:scaleY(0);transform-origin:top;transition:transform 1.2s var(--ease);}
+html.js-anim .pure-text.visible::before{transform:scaleY(1);}
 
 /* ===== work carousel ===== */
 .work-seq{aspect-ratio:16/9;max-width:1100px;margin:0 auto;}
@@ -166,12 +169,19 @@ footer{padding:34px 24px;text-align:center;font-family:var(--display);font-size:
 
 /* ===== reduced motion ===== */
 @media (prefers-reduced-motion: reduce){
-  *{animation:none !important;transition:none !important;}
-  .reveal,.reveal-left,.reveal-right,.reveal-scale,
-  .stagger>*,.h-word-inner,.divider{opacity:1;transform:none;width:100%;}
-  .pure-text::before{transform:scaleY(1);}
+  html.js-anim *{animation:none !important;transition:none !important;}
+  html.js-anim .reveal,html.js-anim .reveal-left,html.js-anim .reveal-right,html.js-anim .reveal-scale,
+  html.js-anim .stagger>*,html.js-anim .h-word-inner,html.js-anim .divider{opacity:1;transform:none;width:100%;}
+  html.js-anim .pure-text::before{transform:scaleY(1);}
 }
 </style>
+<noscript><style>
+  .reveal,.reveal-left,.reveal-right,.reveal-scale{opacity:1 !important;transform:none !important;}
+  .stagger>*{opacity:1 !important;transform:none !important;}
+  .h-word-inner{transform:none !important;}
+  .divider{width:100% !important;}
+  .pure-text::before{transform:scaleY(1) !important;}
+</style></noscript>
 </head>
 <body>
 
@@ -408,6 +418,9 @@ footer{padding:34px 24px;text-align:center;font-family:var(--display);font-size:
 <footer>&copy; 1982 FREDY DEL PINO</footer>
 
 <script>
+/* Mark JS as active so CSS animation initial states apply */
+document.documentElement.classList.add('js-anim');
+
 /* =====================================================================
    SCROLL REVEAL — IntersectionObserver
    ===================================================================== */
@@ -415,24 +428,47 @@ footer{padding:34px 24px;text-align:center;font-family:var(--display);font-size:
   var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (prefersReduced) return;
 
+  var selectors = [
+    '.reveal','.reveal-left','.reveal-right','.reveal-scale',
+    '.stagger','.h-reveal-wrap','.divider','.pure-text'
+  ].join(',');
+
+  var allEls = Array.from(document.querySelectorAll(selectors));
+
+  /* Safety fallback: if IO hasn't fired within 2s, reveal everything */
+  var fallbackTimer = setTimeout(function(){
+    allEls.forEach(function(el){
+      el.classList.add('visible');
+      var inner = el.querySelector && el.querySelector('.h-word-inner');
+      if (inner) inner.classList.add('visible');
+    });
+  }, 2000);
+
+  if (!window.IntersectionObserver) {
+    /* Browser doesn't support IO: reveal all immediately */
+    clearTimeout(fallbackTimer);
+    allEls.forEach(function(el){
+      el.classList.add('visible');
+      var inner = el.querySelector && el.querySelector('.h-word-inner');
+      if (inner) inner.classList.add('visible');
+    });
+    return;
+  }
+
   var opts = {threshold: 0.12, rootMargin: '0px 0px -60px 0px'};
   var io = new IntersectionObserver(function(entries){
     entries.forEach(function(e){
       if (!e.isIntersecting) return;
       var el = e.target;
       el.classList.add('visible');
-      // heading inner reveal
+      /* heading inner reveal */
       var inner = el.querySelector && el.querySelector('.h-word-inner');
       if (inner) inner.classList.add('visible');
       io.unobserve(el);
     });
   }, opts);
 
-  var selectors = [
-    '.reveal','.reveal-left','.reveal-right','.reveal-scale',
-    '.stagger','.h-reveal-wrap','.divider','.pure-text'
-  ].join(',');
-  document.querySelectorAll(selectors).forEach(function(el){ io.observe(el); });
+  allEls.forEach(function(el){ io.observe(el); });
 })();
 
 /* =====================================================================
