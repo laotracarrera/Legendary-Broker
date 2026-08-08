@@ -198,7 +198,7 @@ html,body,.chapter,.chapter-warm,.pure-text,.risk,.end-block,.contact-block{back
 
 <!-- 00 OPENING VIDEO — no logo, no nav, no text -->
 <section class="open-video" id="videoOne">
-  <video autoplay muted playsinline id="v1"><source src="media/video-one.mp4" type="video/mp4"></video>
+  <video autoplay muted playsinline loop preload="auto" id="v1"><source src="media/video-one.mp4" type="video/mp4"></video>
 </section>
 
 <!-- 02 PAUSE TEXT -->
@@ -635,6 +635,7 @@ html,body,.chapter,.chapter-warm,.pure-text,.risk,.end-block,.contact-block{back
   // Gentle automatic page scroll, with a visible on/off control.
   const scrollToggle = document.getElementById('scrollToggle');
   let autoScroll = true;
+  let manualPauseUntil = 0;
   let lastScrollFrame = performance.now();
   function syncScrollUi(){
     if (!scrollToggle) return;
@@ -643,7 +644,7 @@ html,body,.chapter,.chapter-warm,.pure-text,.risk,.end-block,.contact-block{back
   }
   function autoScrollFrame(now){
     const lightboxOpen = document.getElementById('mediaLightbox')?.classList.contains('open');
-    if (autoScroll && !lightboxOpen && document.visibilityState === 'visible') {
+    if (autoScroll && now > manualPauseUntil && !lightboxOpen && document.visibilityState === 'visible') {
       const delta = Math.min(now - lastScrollFrame, 40);
       window.scrollBy(0, delta * 0.085);
       if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) autoScroll = false;
@@ -659,6 +660,13 @@ html,body,.chapter,.chapter-warm,.pure-text,.risk,.end-block,.contact-block{back
       syncScrollUi();
     });
   }
+  const pauseForManualControl = () => { manualPauseUntil = performance.now() + 5000; };
+  window.addEventListener('wheel', pauseForManualControl, { passive: true });
+  window.addEventListener('touchstart', pauseForManualControl, { passive: true });
+  window.addEventListener('pointerdown', pauseForManualControl, { passive: true });
+  window.addEventListener('keydown', (event) => {
+    if (['ArrowDown','ArrowUp','PageDown','PageUp','Home','End',' '].includes(event.key)) pauseForManualControl();
+  });
   syncScrollUi();
   requestAnimationFrame(autoScrollFrame);
 
