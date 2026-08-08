@@ -180,6 +180,10 @@ html,body,.chapter,.chapter-warm,.pure-text,.risk,.end-block,.contact-block{back
 
 
 
+
+/* uniform final palette */
+body,main,section,.chapter,.chapter-warm,.pure-text,.risk,.seq,.seq-frame,.seq-item,.end-block,.contact-block,.contact-bg-clean{background-color:#000!important;background-image:none!important;}
+
 </style>
 </head>
 <body>
@@ -318,6 +322,9 @@ html,body,.chapter,.chapter-warm,.pure-text,.risk,.end-block,.contact-block{back
   <div class="seq tall-seq seq-fit-contain seq-frame dynamic-order" id="seqFamily">
     <div class="seq-item active"><img src="media/family/family01.jpg"></div>
     <div class="seq-item"><img src="media/family/family02.jpg"></div>
+    <div class="seq-item"><img src="media/family/family03.jpg" alt=""></div>
+    <div class="seq-item"><img src="media/family/family04.jpg" alt=""></div>
+    <div class="seq-item"><img src="media/family/family05.jpg" alt=""></div>
   </div>
 </section>
 
@@ -473,9 +480,15 @@ html,body,.chapter,.chapter-warm,.pure-text,.risk,.end-block,.contact-block{back
   function wireAssetFallback(seq){
     seq.querySelectorAll('img, video').forEach(media => {
       media.addEventListener('error', () => {
+        const original = media.getAttribute('src') || '';
+        if (!media.dataset.githubFallback && original && !/^https?:/i.test(original)) {
+          media.dataset.githubFallback = 'true';
+          media.src = 'https://raw.githubusercontent.com/laotracarrera/Legendary-Broker/main/' + original.replace(/^\/+/, '');
+          return;
+        }
         const item = media.closest('.seq-item');
         if (item) item.remove();
-      }, { once: true });
+      });
     });
   }
 
