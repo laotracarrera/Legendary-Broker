@@ -130,6 +130,25 @@ footer{padding:34px 24px;text-align:center;font-family:var(--display);font-size:
   0% { opacity: 0; transform: translateY(20px); }
   100% { opacity: 1; transform: translateY(0); }
 }
+
+/* final mobile presentation */
+.hero-logo{width:min(94vw,1120px);}
+@media (max-width:680px){
+  .h-word{font-size:clamp(62px,20vw,112px);}
+  .tall-seq,.work-seq{width:calc(100% + 32px);margin-left:-16px;min-height:58vh;aspect-ratio:auto;}
+  .tall-seq.portrait{width:min(100%,560px);margin-inline:auto;min-height:72vh;}
+}
+.contact-bg-clean{background:radial-gradient(circle at 50% 35%,#24100f 0,#090909 42%,#000 75%);}
+.media-lightbox{position:fixed;inset:0;z-index:5000;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.96);padding:18px;}
+.media-lightbox.open{display:flex;}
+.media-lightbox img{width:auto;height:auto;max-width:100%;max-height:92vh;object-fit:contain;filter:none;}
+.media-lightbox-close{position:absolute;top:14px;right:14px;width:48px;height:48px;border:1px solid #555;background:#080808;color:#fff;font:700 26px/1 var(--display);z-index:2;}
+.seq img{cursor:zoom-in;}
+.site-controls{position:fixed;right:14px;bottom:14px;z-index:1000;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;max-width:calc(100vw - 28px);}
+.site-controls .audio-toggle,.site-controls .scroll-toggle{position:static;}
+.scroll-toggle{background:rgba(0,0,0,.75);border:1px solid #303030;color:var(--ink);font-family:var(--display);font-size:15px;letter-spacing:.08em;padding:10px 14px;text-transform:uppercase;backdrop-filter:blur(2px);}
+.scroll-toggle[aria-pressed="true"]{border-color:var(--red-bright);}
+
 </style>
 </head>
 <body>
@@ -226,6 +245,7 @@ footer{padding:34px 24px;text-align:center;font-family:var(--display);font-size:
     <div class="seq-item" style="display:flex;align-items:center;justify-content:center;"><img src="awards/oscar.png" style="width:auto;height:60%;object-fit:contain;"></div>
     <div class="seq-item" style="display:flex;align-items:center;justify-content:center;"><img src="awards/clapper.png" style="width:auto;height:60%;object-fit:contain;"></div>
     <div class="seq-item" style="display:flex;align-items:center;justify-content:center;"><img src="awards/star.png" style="width:auto;height:60%;object-fit:contain;"></div>
+    <div class="seq-item"><img src="assets/wasted-ref.png" alt="Wasted award artwork"></div>
   </div>
 </section>
 
@@ -330,7 +350,7 @@ footer{padding:34px 24px;text-align:center;font-family:var(--display);font-size:
 
 <!-- 13 CONTACT -->
 <a href="contacto.html" target="_blank" rel="noopener" class="contact-block tapable">
-  <div class="bg"><img src="assets/wasted-ref.png" alt=""></div>
+  <div class="bg contact-bg-clean" aria-hidden="true"></div>
   <div class="inner">
     <div class="contact-word">CONTACT</div>
     <div class="contact-icons">
@@ -344,7 +364,14 @@ footer{padding:34px 24px;text-align:center;font-family:var(--display);font-size:
 
 <footer>&copy; 1982 FREDY DEL PINO</footer>
 
-<button id="audioToggle" class="audio-toggle tapable" type="button" aria-pressed="false" aria-label="Play site audio">Audio Off</button>
+<div class="media-lightbox" id="mediaLightbox" role="dialog" aria-modal="true" aria-label="Full screen image">
+  <button class="media-lightbox-close" id="mediaLightboxClose" type="button" aria-label="Close full screen image">×</button>
+  <img id="mediaLightboxImage" alt="">
+</div>
+<div class="site-controls">
+  <button id="scrollToggle" class="scroll-toggle tapable" type="button" aria-pressed="true">Scroll Auto</button>
+  <button id="audioToggle" class="audio-toggle tapable" type="button" aria-pressed="false" aria-label="Play site audio">Music On</button>
+</div>
 
 <script>
   const headerLogo = document.querySelector('.site-header img');
@@ -562,6 +589,70 @@ footer{padding:34px 24px;text-align:center;font-family:var(--display);font-size:
   window.addEventListener('pageshow', (event) => {
     const nav = performance.getEntriesByType('navigation')[0];
     if (!event.persisted && nav && nav.type === 'navigate' && window.scrollY === 0) window.scrollTo(0, 0);
+  });
+
+  // Start the soundtrack on the first real gesture (required by mobile browsers).
+  const startMusicOnce = () => {
+    userInteracted = true;
+    if (theme && theme.paused) theme.play().catch(() => {});
+    syncAudioUi();
+  };
+  window.addEventListener('pointerdown', startMusicOnce, { once: true });
+  window.addEventListener('touchstart', startMusicOnce, { once: true, passive: true });
+
+  // Gentle automatic page scroll, with a visible on/off control.
+  const scrollToggle = document.getElementById('scrollToggle');
+  let autoScroll = !reducedMotion;
+  let lastScrollFrame = performance.now();
+  function syncScrollUi(){
+    if (!scrollToggle) return;
+    scrollToggle.setAttribute('aria-pressed', autoScroll ? 'true' : 'false');
+    scrollToggle.textContent = autoScroll ? 'Scroll Auto' : 'Scroll Paused';
+  }
+  function autoScrollFrame(now){
+    const lightboxOpen = document.getElementById('mediaLightbox')?.classList.contains('open');
+    if (autoScroll && !lightboxOpen && document.visibilityState === 'visible') {
+      const delta = Math.min(now - lastScrollFrame, 40);
+      window.scrollBy(0, delta * 0.022);
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) autoScroll = false;
+    }
+    lastScrollFrame = now;
+    syncScrollUi();
+    requestAnimationFrame(autoScrollFrame);
+  }
+  if (scrollToggle) {
+    scrollToggle.addEventListener('click', (event) => {
+      event.preventDefault();
+      autoScroll = !autoScroll;
+      syncScrollUi();
+    });
+  }
+  syncScrollUi();
+  requestAnimationFrame(autoScrollFrame);
+
+  // Tap any gallery photo to see it full screen.
+  const mediaLightbox = document.getElementById('mediaLightbox');
+  const mediaLightboxImage = document.getElementById('mediaLightboxImage');
+  const mediaLightboxClose = document.getElementById('mediaLightboxClose');
+  function closeLightbox(){
+    mediaLightbox?.classList.remove('open');
+    if (mediaLightboxImage) mediaLightboxImage.removeAttribute('src');
+  }
+  document.addEventListener('click', (event) => {
+    const image = event.target.closest('.seq img');
+    if (!image || !mediaLightbox || !mediaLightboxImage) return;
+    event.preventDefault();
+    mediaLightboxImage.src = image.currentSrc || image.src;
+    mediaLightboxImage.alt = image.alt || '';
+    mediaLightbox.classList.add('open');
+    mediaLightboxClose?.focus();
+  });
+  mediaLightboxClose?.addEventListener('click', closeLightbox);
+  mediaLightbox?.addEventListener('click', (event) => {
+    if (event.target === mediaLightbox) closeLightbox();
+  });
+  window.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeLightbox();
   });
 </script>
 
