@@ -139,11 +139,7 @@ footer{padding:34px 24px;text-align:center;font-family:var(--display);font-size:
   .tall-seq.portrait{width:min(100%,560px);margin-inline:auto;min-height:72vh;}
 }
 .contact-bg-clean{background:radial-gradient(circle at 50% 35%,#24100f 0,#090909 42%,#000 75%);}
-.media-lightbox{position:fixed;inset:0;z-index:5000;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.96);padding:18px;}
-.media-lightbox.open{display:flex;}
-.media-lightbox img{width:auto;height:auto;max-width:100%;max-height:92vh;object-fit:contain;filter:none;}
-.media-lightbox-close{position:absolute;top:14px;right:14px;width:48px;height:48px;border:1px solid #555;background:#080808;color:#fff;font:700 26px/1 var(--display);z-index:2;}
-.seq img{cursor:zoom-in;}
+
 .site-controls{position:fixed;right:14px;bottom:14px;z-index:1000;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;max-width:calc(100vw - 28px);}
 .site-controls .audio-toggle,.site-controls .scroll-toggle{position:static;}
 .scroll-toggle{background:rgba(0,0,0,.75);border:1px solid #303030;color:var(--ink);font-family:var(--display);font-size:15px;letter-spacing:.08em;padding:10px 14px;text-transform:uppercase;backdrop-filter:blur(2px);}
@@ -171,12 +167,11 @@ html,body,.chapter,.chapter-warm,.pure-text,.risk,.end-block,.contact-block{back
 .seq .seq-item.active{pointer-events:auto;z-index:3;}
 .seq .seq-item img,.seq .seq-item video{width:100%!important;height:100%!important;object-fit:cover!important;}
 #seqAwards .seq-item img,#seqBrand .seq-item img{object-fit:contain!important;}
-.seq img{cursor:zoom-in!important;position:relative;z-index:4;}
+.seq img{position:relative;z-index:4;}
 .reveal{opacity:0!important;transform:translate3d(0,72px,0) skewY(3deg)!important;filter:blur(7px)!important;transition:opacity .65s var(--ease),transform .9s var(--ease),filter .7s ease!important;}
 .reveal.in-view{opacity:1!important;transform:translate3d(0,0,0) skewY(0)!important;filter:blur(0)!important;}
 .site-controls{display:none!important;}
-.media-lightbox{padding:0!important;}
-.media-lightbox img{width:100vw!important;height:100svh!important;max-width:none!important;max-height:none!important;object-fit:contain!important;}
+
 @media(max-width:680px){
  .seq,.work-seq,.tall-seq,.tall-seq.portrait{height:100svh!important;min-height:100svh!important;width:100vw!important;margin-left:calc(50% - 50vw)!important;}
  .chapter>.eyebrow,.chapter>.h-word,.chapter>.copy-block{margin-left:22px;margin-right:22px;}
@@ -400,10 +395,6 @@ html,body,.chapter,.chapter-warm,.pure-text,.risk,.end-block,.contact-block{back
 
 <footer>&copy; 1982 FREDY DEL PINO</footer>
 
-<div class="media-lightbox" id="mediaLightbox" role="dialog" aria-modal="true" aria-label="Full screen image">
-  <button class="media-lightbox-close" id="mediaLightboxClose" type="button" aria-label="Close full screen image">×</button>
-  <img id="mediaLightboxImage" alt="">
-</div>
 <script>
   const headerLogo = document.querySelector('.site-header img');
   const heroLogo = document.getElementById('heroLogo');
@@ -651,8 +642,7 @@ html,body,.chapter,.chapter-warm,.pure-text,.risk,.end-block,.contact-block{back
     scrollToggle.textContent = autoScroll ? 'Scroll Auto' : 'Scroll Paused';
   }
   function autoScrollFrame(now){
-    const lightboxOpen = document.getElementById('mediaLightbox')?.classList.contains('open');
-    if (autoScroll && now > manualPauseUntil && !lightboxOpen && document.visibilityState === 'visible') {
+    if (autoScroll && now > manualPauseUntil && document.visibilityState === 'visible') {
       const delta = Math.min(now - lastScrollFrame, 40);
       window.scrollBy(0, delta * 0.085);
       if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) autoScroll = false;
@@ -678,30 +668,7 @@ html,body,.chapter,.chapter-warm,.pure-text,.risk,.end-block,.contact-block{back
   syncScrollUi();
   requestAnimationFrame(autoScrollFrame);
 
-  // Tap any gallery photo to see it full screen.
-  const mediaLightbox = document.getElementById('mediaLightbox');
-  const mediaLightboxImage = document.getElementById('mediaLightboxImage');
-  const mediaLightboxClose = document.getElementById('mediaLightboxClose');
-  function closeLightbox(){
-    mediaLightbox?.classList.remove('open');
-    if (mediaLightboxImage) mediaLightboxImage.removeAttribute('src');
-  }
-  document.addEventListener('click', (event) => {
-    const image = event.target.closest('.seq img');
-    if (!image || !mediaLightbox || !mediaLightboxImage) return;
-    event.preventDefault();
-    mediaLightboxImage.src = image.currentSrc || image.src;
-    mediaLightboxImage.alt = image.alt || '';
-    mediaLightbox.classList.add('open');
-    mediaLightboxClose?.focus();
-  });
-  mediaLightboxClose?.addEventListener('click', closeLightbox);
-  mediaLightbox?.addEventListener('click', (event) => {
-    if (event.target === mediaLightbox) closeLightbox();
-  });
-  window.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') closeLightbox();
-  });
+
 </script>
 
 </body>
