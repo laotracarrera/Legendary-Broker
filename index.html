@@ -162,6 +162,7 @@ footer{padding:34px 24px;text-align:center;font-family:var(--display);font-size:
 
 
 /* definitive full-screen experience */
+.site-header{display:none!important;}
 html,body,.chapter,.chapter-warm,.pure-text,.risk,.end-block,.contact-block{background:#000!important;}
 .chapter{padding-left:0!important;padding-right:0!important;}
 .chapter>.eyebrow,.chapter>.h-word,.chapter>.copy-block{margin-left:clamp(22px,7vw,90px);margin-right:clamp(22px,7vw,90px);}
@@ -636,7 +637,7 @@ html,body,.chapter,.chapter-warm,.pure-text,.risk,.end-block,.contact-block{back
 
   // Gentle automatic page scroll, with a visible on/off control.
   const scrollToggle = document.getElementById('scrollToggle');
-  let autoScroll = !reducedMotion;
+  let autoScroll = true;
   let lastScrollFrame = performance.now();
   function syncScrollUi(){
     if (!scrollToggle) return;
@@ -647,7 +648,7 @@ html,body,.chapter,.chapter-warm,.pure-text,.risk,.end-block,.contact-block{back
     const lightboxOpen = document.getElementById('mediaLightbox')?.classList.contains('open');
     if (autoScroll && !lightboxOpen && document.visibilityState === 'visible') {
       const delta = Math.min(now - lastScrollFrame, 40);
-      window.scrollBy(0, delta * 0.065);
+      window.scrollBy(0, delta * 0.085);
       if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) autoScroll = false;
     }
     lastScrollFrame = now;
