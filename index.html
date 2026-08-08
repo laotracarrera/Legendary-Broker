@@ -184,8 +184,6 @@ html,body,.chapter,.chapter-warm,.pure-text,.risk,.end-block,.contact-block{back
 @media(prefers-reduced-motion:reduce){.reveal{opacity:1!important;transform:none!important;filter:none!important;}}
 
 
-.risk-visual{width:100vw;height:100svh;margin:70px 0 70px calc(50% - 50vw);overflow:hidden;background:#000;}
-.risk-visual img{width:100%;height:100%;object-fit:cover;display:block;}
 
 </style>
 </head>
@@ -341,12 +339,12 @@ html,body,.chapter,.chapter-warm,.pure-text,.risk,.end-block,.contact-block{back
     <p>But...</p>
     <p>What if it works?</p>
   </div>
-  <div class="risk-visual"><img src="assets/wasted-ref.png" alt="Wasted"></div>
   <span class="brand-label">Brand</span>
   <div class="seq tall-seq seq-fit-contain seq-frame dynamic-order" id="seqBrand">
     <div class="seq-item active"><img src="media/brand/brand01.jpg" alt="Brand logo 1"></div>
     <div class="seq-item"><img src="media/brand/brand02.jpg" alt="Brand logo 2"></div>
     <div class="seq-item"><img src="media/brand/brand03.jpg" alt="Brand logo 3"></div>
+    <div class="seq-item"><img src="assets/wasted-ref.png" alt="Wasted"></div>
   </div>
 </section>
 
@@ -455,11 +453,14 @@ html,body,.chapter,.chapter-warm,.pure-text,.risk,.end-block,.contact-block{back
       const rows = await response.json();
       const assets = rows.filter(row => row && row.type === 'file' && mediaExt.test(row.name)).map(row => row.path);
       if (!assets.length) return;
-      seq.innerHTML = '';
-      assets.forEach((path, index) => {
-        const item = buildMediaItem(path);
-        if (index === 0) item.classList.add('active');
-        seq.appendChild(item);
+      const existing = new Set(Array.from(seq.querySelectorAll('img,video')).map(media => {
+        const raw = media.getAttribute('src') || '';
+        try { return decodeURIComponent(new URL(raw, location.href).pathname).replace(/^\/+/, ''); }
+        catch (_error) { return raw.replace(/^\/+/, ''); }
+      }));
+      assets.forEach((path) => {
+        if (existing.has(path)) return;
+        seq.appendChild(buildMediaItem(path));
       });
     } catch (_error) {
       // fallback keeps static markup when offline/rate-limited
@@ -534,6 +535,7 @@ html,body,.chapter,.chapter-warm,.pure-text,.risk,.end-block,.contact-block{back
   }
 
   Promise.all([
+    hydrateSeqFromRepo('seqAwards', 'media/awards'),
     hydrateSeqFromRepo('seqLove', 'media/love'),
     hydrateSeqFromRepo('seqFamily', 'media/family'),
     hydrateSeqFromRepo('seqBrand', 'media/brand')
