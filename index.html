@@ -535,10 +535,12 @@ html,body,.chapter,.chapter-warm,.pure-text,.risk,.end-block,.contact-block{back
   }
 
   Promise.all([
+    hydrateSeqFromRepo('seqSet', 'media/set'),
     hydrateSeqFromRepo('seqAwards', 'media/awards'),
     hydrateSeqFromRepo('seqLove', 'media/love'),
     hydrateSeqFromRepo('seqFamily', 'media/family'),
-    hydrateSeqFromRepo('seqBrand', 'media/brand')
+    hydrateSeqFromRepo('seqBrand', 'media/brand'),
+    hydrateSeqFromRepo('seqMe', 'media/me')
   ]).finally(() => {
     document.querySelectorAll('.seq').forEach(seq => {
       wireAssetFallback(seq);
